@@ -98,12 +98,20 @@ public:
     string getCustomerName() const { return customerName; }
 };
 
+// --- [FEEDBACK FEATURE] ---
+struct Feedback {
+    string customerName;
+    int roomNumber;
+    string comment;
+};
+
 // System class
 class HotelSystem {
 private:
     vector<Room> rooms;
     vector<User*> users;
     vector<Reservation> reservations;
+    vector<Feedback> feedbacks; // --- [FEEDBACK FEATURE] ---
     BillStrategy* billStrategy;
     User* currentUser = nullptr;
 
@@ -258,6 +266,7 @@ public:
             cout << "5. Edit Room Rate\n";
             cout << "6. Edit Room Availability\n";
             cout << "7. Cancel a Reservation\n";
+            cout << "8. View Feedback\n"; // --- [FEEDBACK FEATURE] ---
             cout << "0. Logout\n";
             choice = getInt("Choice: ");
             if (choice == 1) showReservations();
@@ -267,6 +276,7 @@ public:
             else if (choice == 5) editRoomRate();
             else if (choice == 6) editRoomAvailability();
             else if (choice == 7) cancelReservation();
+            else if (choice == 8) viewFeedback(); // --- [FEEDBACK FEATURE] ---
         } while (choice != 0);
     }
 
@@ -277,11 +287,13 @@ public:
             cout << "1. Book Room\n";
             cout << "2. My Room Reservations\n";
             cout << "3. Cancel My Reservation\n";
+            cout << "4. Leave Feedback\n"; // --- [FEEDBACK FEATURE] ---
             cout << "0. Logout\n";
             choice = getInt("Choice: ");
             if (choice == 1) bookRoom();
             else if (choice == 2) myReservations();
             else if (choice == 3) cancelReservation();
+            else if (choice == 4) leaveFeedback(); // --- [FEEDBACK FEATURE] ---
         } while (choice != 0);
     }
 
@@ -405,6 +417,41 @@ public:
             cout << "Room marked as booked.\n";
         } else {
             cout << "Invalid choice.\n";
+        }
+    }
+
+    // --- [FEEDBACK FEATURE] ---
+    void leaveFeedback() {
+        cout << "\nLeave Feedback:\n";
+        int roomNum = getInt("Enter room number: ");
+        bool hasReservation = false;
+        for (const auto& res : reservations) {
+            if (res.getCustomerName() == currentUser->getUsername() &&
+                res.getRoomNumber() == roomNum) {
+                hasReservation = true;
+                break;
+            }
+        }
+        if (!hasReservation) {
+            cout << "You have no reservation for this room.\n";
+            return;
+        }
+        string comment;
+        cout << "Enter your feedback: ";
+        getline(cin, comment);
+        feedbacks.push_back({currentUser->getUsername(), roomNum, comment});
+        cout << "Thank you for your feedback!\n";
+    }
+
+    void viewFeedback() {
+        cout << "\nCustomer Feedback:\n";
+        if (feedbacks.empty()) {
+            cout << "No feedback available.\n";
+            return;
+        }
+        for (const auto& f : feedbacks) {
+            cout << "Room " << f.roomNumber << " | " << f.customerName
+                 << ": " << f.comment << endl;
         }
     }
 };
