@@ -154,6 +154,7 @@ public:
         rooms.emplace_back(102, 120.0);
         rooms.emplace_back(103, 150.0);
         users.push_back(new Admin("admin", "admin123"));
+        users.push_back(new Customer("guest", "1234"));
         billStrategy = new StandardBill();
     }
 
@@ -161,6 +162,39 @@ public:
         delete billStrategy;
         for (auto user : users)
             delete user;
+    }
+
+    void loginMenu() {
+        cout << "\n--- Login ---\n";
+        string uname, pass;
+        cout << "Username: "; getline(cin, uname);
+        cout << "Password: "; getline(cin, pass);
+
+        for (auto user : users) {
+            if (user->getUsername() == uname && user->checkPassword(pass)) {
+                currentUser = user;
+                user->menu();
+                mainMenu();
+                return;
+            }
+        }
+        cout << "Login failed.\n";
+    }
+
+    void mainMenu() {
+        int choice;
+        do {
+            cout << "\n1. Leave Feedback\n2. View Feedback\n3. View Booking History\n0. Logout\nChoice: ";
+            cin >> choice;
+            cin.ignore();
+            switch (choice) {
+                case 1: leaveFeedback(); break;
+                case 2: viewFeedback(); break;
+                case 3: viewBookingHistory(); break;
+                case 0: currentUser = nullptr; cout << "Logged out.\n"; break;
+                default: cout << "Invalid choice.\n";
+            }
+        } while (currentUser);
     }
 
     // --- [FEEDBACK FEATURE] ---
@@ -199,10 +233,24 @@ public:
                  << ": " << f.comment << " (Rating: " << f.rating << "/5)\n";
         }
     }
+
+    void viewBookingHistory() {
+        cout << "\nYour Booking History:\n";
+        bool found = false;
+        for (const auto& res : reservations) {
+            if (res.getCustomerName() == currentUser->getUsername()) {
+                res.show();
+                found = true;
+            }
+        }
+        if (!found) {
+            cout << "No reservations found under your name.\n";
+        }
+    }
 };
 
 int main() {
     HotelSystem system;
-    // Note: system.mainMenu() would be the main menu, assumed to exist
+    system.loginMenu();
     return 0;
 }
